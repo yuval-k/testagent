@@ -1,10 +1,8 @@
 # Test Agent
 
-This repo now runs a Strands-based HTTP agent service instead of ADK.
+This repo now runs a Strands agent on the Bedrock AgentCore runtime wrapper instead of ADK.
 
-It exposes:
-- `GET /ping`
-- `POST /invocations`
+It uses `BedrockAgentCoreApp`, so `/ping` and `/invocations` are provided by the AgentCore SDK runtime wrapper.
 
 The agent uses:
 - Amazon Bedrock for the model, via IAM credentials
@@ -23,5 +21,5 @@ Invoke it:
 ```bash
 curl -X POST http://localhost:8080/invocations \
   -H "Content-Type: application/json" \
-  -d '{"input":{"prompt":"roll a 20 sided die and tell me if it is prime"}}'
+  -d '{"prompt":"roll a 20 sided die and tell me if it is prime"}'
 ```

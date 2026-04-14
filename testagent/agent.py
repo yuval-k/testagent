@@ -5,10 +5,8 @@ from contextlib import asynccontextmanager
 from typing import Any
 from urllib.parse import quote
 
-import uvicorn
-from fastapi import FastAPI, HTTPException
+from bedrock_agentcore.runtime import BedrockAgentCoreApp
 from mcp_proxy_for_aws.client import aws_iam_streamablehttp_client
-from pydantic import BaseModel
 from strands import Agent
 from strands.models.bedrock import BedrockModel
 from strands.tools import tool
@@ -39,14 +37,6 @@ When you are asked to roll a die and check prime numbers, follow this order:
 If the user asks you to check primes based on previous rolls, include the previous rolls in the list.
 Do not rely on prior prime-number outputs.
 """
-
-
-class InvocationRequest(BaseModel):
-    input: dict[str, Any]
-
-
-class InvocationResponse(BaseModel):
-    output: dict[str, Any]
 
 
 @tool
@@ -133,7 +123,7 @@ def extract_text(result: Any) -> str:
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app: BedrockAgentCoreApp):
     mcp_client = create_mcp_client()
     app.state.mcp_client = mcp_client
     app.state.mcp_client.start()
@@ -143,33 +133,27 @@ async def lifespan(app: FastAPI):
         app.state.mcp_client.stop(None, None, None)
 
 
-app = FastAPI(title="testagent", version="0.1.0", lifespan=lifespan)
+app = BedrockAgentCoreApp(lifespan=lifespan)
 
 
-@app.get("/ping")
-async def ping() -> dict[str, str]:
-    return {"status": "ok"}
-
-
-@app.post("/invocations", response_model=InvocationResponse)
-async def invoke_agent(request: InvocationRequest) -> InvocationResponse:
-    prompt = request.input.get("prompt")
+@app.entrypoint
+def invoke(payload: dict[str, Any]) -> dict[str, str]:
+    prompt = payload.get("prompt")
     if not prompt:
-        raise HTTPException(status_code=400, detail="No prompt found in input.")
+        raise ValueError("No prompt found in payload.")
 
     agent = build_agent(app.state.mcp_client)
     result = agent(prompt)
-    return InvocationResponse(output={"text": extract_text(result)})
-
+    # return {"text": extract_text(result)}
+    return {"result": result.message}
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Run the testagent Strands service.")
-    parser.add_argument("--local", action="store_true", help="Run the local HTTP server.")
-    parser.add_argument("--host", default="0.0.0.0")
+    parser = argparse.ArgumentParser(description="Run the testagent Strands AgentCore app.")
+    parser.add_argument("--host", default=None)
     parser.add_argument("--port", type=int, default=8080)
     args = parser.parse_args()
 
-    uvicorn.run("testagent.agent:app", host=args.host, port=args.port, reload=False)
+    app.run(port=args.port, host=args.host)
 
 
 if __name__ == "__main__":
