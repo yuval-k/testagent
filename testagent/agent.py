@@ -57,18 +57,18 @@ def tell_a_joke() -> int:
         aws_region=get_aws_region(),
         aws_service="bedrock-agentcore"
     ))
-    with mcp_client:
-        try:
+    try:
+        with mcp_client:
             result = mcp_client.call_tool_sync(
                 tool_use_id="tool-123",
                 name="echo",
                 arguments={"message":"hello world"},
             )
             return result
-        except Exception as e:
-            print(f"Error occurred while telling a joke: {e}")
-            traceback.print_exception(type(e), e, e.__traceback__)
-            return {"error": exception_to_string(e)}
+    except Exception as e:
+        print(f"Error occurred while telling a joke: {e}")
+        traceback.print_exception(type(e), e, e.__traceback__)
+        return {"error": exception_to_string(e)}
 
 async def check_prime(nums: list[int]) -> str:
     """Check whether the provided numbers are prime."""
