@@ -110,8 +110,7 @@ You should not rely on the previous history on prime results.
 
     """,
     tools=[
-        roll_die,
-        check_prime,
-    ] + (mcp_tools if mcp_tools else []),
+        tell_a_joke
+    ],
 )
 
