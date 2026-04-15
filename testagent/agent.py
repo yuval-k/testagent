@@ -53,12 +53,13 @@ def tell_a_joke() -> int:
         aws_region=get_aws_region(),
         aws_service="bedrock-agentcore"
     ))
-    result = mcp_client.call_tool_sync(
-        tool_use_id="tool-123",
-        name="echo",
-        arguments={"message":"hello world"},
-    )
-    return result
+    with mcp_client:
+        result = mcp_client.call_tool_sync(
+            tool_use_id="tool-123",
+            name="echo",
+            arguments={"message":"hello world"},
+        )
+        return result
 
 async def check_prime(nums: list[int]) -> str:
     """Check whether the provided numbers are prime."""
