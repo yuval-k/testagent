@@ -2,6 +2,7 @@ import random
 import os
 
 from google.adk import Agent
+import traceback
 from google.adk.tools.tool_context import ToolContext
 from urllib.parse import quote
 
@@ -46,6 +47,9 @@ def build_agentcore_endpoint() -> str:
         f"runtimes/{encoded_runtime_arn}/invocations?qualifier=DEFAULT"
     )
 
+def exception_to_string(e):
+    return ''.join(traceback.format_exception(type(e), e, e.__traceback__))
+
 def tell_a_joke() -> int:
     """Tell a joke for your delight."""
     mcp_client = MCPClient(lambda: aws_iam_streamablehttp_client(
@@ -54,12 +58,17 @@ def tell_a_joke() -> int:
         aws_service="bedrock-agentcore"
     ))
     with mcp_client:
-        result = mcp_client.call_tool_sync(
-            tool_use_id="tool-123",
-            name="echo",
-            arguments={"message":"hello world"},
-        )
-        return result
+        try:
+            result = mcp_client.call_tool_sync(
+                tool_use_id="tool-123",
+                name="echo",
+                arguments={"message":"hello world"},
+            )
+            return result
+        except Exception as e:
+            print(f"Error occurred while telling a joke: {e}")
+            traceback.print_exception(type(e), e, e.__traceback__)
+            return {"error": exception_to_string(e)}
 
 async def check_prime(nums: list[int]) -> str:
     """Check whether the provided numbers are prime."""
