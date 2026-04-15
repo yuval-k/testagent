@@ -1,25 +1,7 @@
 # Test Agent
 
-This repo now runs a Strands agent on the Bedrock AgentCore runtime wrapper instead of ADK.
-
-It uses `BedrockAgentCoreApp`, so `/ping` and `/invocations` are provided by the AgentCore SDK runtime wrapper.
-
-The agent uses:
-- Amazon Bedrock for the model, via IAM credentials
-- an AgentCore MCP runtime over AWS IAM using `mcp-proxy-for-aws`
-- two local tools: `roll_die` and `check_prime`
-
-Run locally with `uv`:
+This agent is used for testing [agentregistry](https://github.com/agentregistry-dev/agentregistry). It was created with:
 
 ```bash
-uv sync
-uv run testagent --local
-```
-
-Invoke it:
-
-```bash
-curl -X POST http://localhost:8080/invocations \
-  -H "Content-Type: application/json" \
-  -d '{"prompt":"roll a 20 sided die and tell me if it is prime"}'
+arctl agent init adk python testagent
 ```

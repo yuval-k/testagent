@@ -1,8 +1,8 @@
 agentName: testagent
 image: localhost:5001/testagent:latest
 language: python
-framework: stands
-modelProvider: bedrock
-modelName: bedrock-whatever
+framework: adk
+modelProvider: gemini
+modelName: gemini-2.0-flash
 description: ""
 updatedAt: 2026-03-04T07:51:04.691386-08:00
